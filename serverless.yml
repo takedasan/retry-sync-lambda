@@ -1,0 +1,47 @@
+service: retry-sync-lambda
+
+provider:
+  name: aws
+  runtime: java8
+  region: ap-northeast-1
+
+package:
+  artifact: build/libs/retry-sync-lambda.jar
+
+functions:
+  retrySyncInvoker:
+    handler: com.serverless.SyncInvokeHandler
+    role: lambdaInvokeRole
+    timeout: 120
+  retryAsyncInvoker:
+    handler: com.serverless.AsyncInvokeHandler
+    role: lambdaInvokeRole
+    timeout: 120
+  retrySync:
+    handler: com.serverless.Handler
+    reservedConcurrency: 1
+    timeout: 120
+
+resources:
+  Resources:
+    lambdaInvokeRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: lambdaInvokeRole
+        AssumeRolePolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Policies:
+          - PolicyName: TextractPolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - lambda:InvokeFunction
+                  Resource: "*"
